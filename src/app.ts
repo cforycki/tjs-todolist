@@ -5,7 +5,7 @@ import BodyParser from './middlewares/BodyParser';
 import Middleware from './middlewares/Middleware';
 import Router from './routes/Router';
 import express = require('express');
-import {ListRouter} from './routes/ListRouter';
+import {ListsRouter} from './routes/ListsRouter';
 
 export class App {
     private root: string = '/api';
@@ -15,7 +15,7 @@ export class App {
         new AllowCrossDomain()
     ];
     private routes: Array<Router> = [
-        new ListRouter()
+        new ListsRouter()
     ];
 
     constructor() {

@@ -1,15 +1,14 @@
-import {Entity} from 'typeorm/decorator/entity/Entity';
-import {PrimaryGeneratedColumn} from 'typeorm';
+import {ToDo} from './ToDo';
+import {ListItem} from './ListItem';
+export class List extends ToDo {
 
-@Entity()
-export class List {
-    @PrimaryGeneratedColumn()
-    id: number;
+    items: Array<ListItem>;
 
     constructor();
-    constructor({id}: { id?: number});
-    constructor(param?: { id: number} | undefined) {
-        this.id = param && param.id || null;
+    constructor({id, items}: { id?: number, items?: Array<ListItem>});
+    constructor(param?: { id?: number, items?: Array<ListItem>} | undefined) {
+        super(param);
+        this.items = param && param.items || null;
     }
 
 }
