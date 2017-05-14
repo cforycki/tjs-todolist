@@ -1,54 +1,54 @@
 import {Request, Response} from 'express';
 import * as _ from 'underscore';
-import {ToDo} from '../entities/ToDo';
+import {Entity} from '../entities/Entity';
 import {Router} from './Router';
 
-export class ToDoRouter<T extends ToDo> extends Router {
+export class EntityRouter<T extends Entity> extends Router {
 
     root: string;
-    todos: Array<T>;
+    entities: Array<T>;
     Type: { new(...args) };
 
-    constructor(type: { new(...args):T }, basePath: string) {
+    constructor(type: { new(...args): T }, basePath: string) {
         super();
         this.root = basePath;
-        this.todos = [];
+        this.entities = [];
         this.Type = type;
     }
 
     initRoutes() {
 
         this.router.get('/', async (req: Request, res: Response) => {
-            res.send(this.todos);
+            res.send(this.entities);
         });
 
         this.router.get('/:id', async (req: Request, res: Response) => {
-            let item = _.findWhere(this.todos, {id: Number.parseInt(req.params.id)});
+            let item = _.findWhere(this.entities, {id: Number.parseInt(req.params.id)});
             if (item) {
                 res.json(item);
-            }else{
+            } else {
                 res.status(204);
             }
             res.send();
         });
 
         this.router.post('/', async (req: Request, res: Response) => {
-            let todo = new this.Type(JSON.parse(req.body.todo));
-            this.todos.push(todo);
-            todo.id = _.chain(this.todos)
+            let entity = new this.Type(JSON.parse(req.body.entity));
+            this.entities.push(entity);
+            entity.id = _.chain(this.entities)
                        .pluck('id')
                        .max()
                        .value() + 1;
-            res.location(req.baseUrl + '/' + todo.id);
+            res.location(req.baseUrl + '/' + entity.id);
             res.status(201);
-            res.send(todo);
+            res.send(entity);
         });
 
         this.router.put('/:id', async (req: Request, res: Response) => {
-            let todoUpdated = new this.Type(JSON.parse(req.body.list));
-            let index = _.findIndex(this.todos, (todo) => todo.id === todoUpdated.id);
+            let entityUpdated = new this.Type(JSON.parse(req.body.entity));
+            let index = _.findIndex(this.entities, (entity) => entity.id === entityUpdated.id);
             if (index !== -1) {
-                this.todos.splice(index, 1, todoUpdated);
+                this.entities.splice(index, 1, entityUpdated);
                 res.status(204);
             } else {
                 res.status(405);
@@ -58,11 +58,11 @@ export class ToDoRouter<T extends ToDo> extends Router {
 
         this.router.delete('/:id', async (req: Request, res: Response) => {
             let id = Number.parseInt(req.params.id);
-            this.todos = _.filter(this.todos, (todo) => todo.id !== id);
+            this.entities = _.filter(this.entities, (entity) => entity.id !== id);
             res.sendStatus(200);
         });
 
     }
 }
 
-export default ToDoRouter;
+export default EntityRouter;

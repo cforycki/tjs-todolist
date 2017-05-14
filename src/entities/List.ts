@@ -1,6 +1,6 @@
-import {IToDo, ToDo} from './ToDo';
+import {Entity, IEntity} from './Entity';
 import {ListItem} from './ListItem';
-export class List extends ToDo {
+export class List extends Entity {
 
     items: Array<ListItem>;
 
@@ -13,6 +13,6 @@ export class List extends ToDo {
 
 }
 
-export interface IList extends IToDo {
+export interface IList extends IEntity {
     items?: Array<ListItem>
 }
