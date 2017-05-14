@@ -1,11 +1,13 @@
 import 'reflect-metadata';
 import * as _ from 'underscore';
+import {List} from './entities/List';
+import {Reminder} from './entities/Reminder';
 import AllowCrossDomain from './middlewares/AllowCrossDomain';
 import BodyParser from './middlewares/BodyParser';
 import Middleware from './middlewares/Middleware';
 import Router from './routes/Router';
+import {ToDoRouter} from './routes/ToDoRouter';
 import express = require('express');
-import {ListsRouter} from './routes/ListsRouter';
 
 export class App {
     private root: string = '/api';
@@ -15,7 +17,8 @@ export class App {
         new AllowCrossDomain()
     ];
     private routes: Array<Router> = [
-        new ListsRouter()
+        new ToDoRouter(List, '/lists'),
+        new ToDoRouter(Reminder, '/reminders')
     ];
 
     constructor() {
