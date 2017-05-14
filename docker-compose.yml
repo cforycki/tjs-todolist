@@ -1,0 +1,12 @@
+database:
+  image: "postgres:9.6.2"
+  container_name: "todolist-db"
+  ports:
+    - "4000:5432"
+  environment:
+    POSTGRES_USER: "todolist"
+    POSTGRES_PASSWORD: "todolist"
+    POSTGRES_DB: "todolist"
+  volumes:
+    - ./database:/var/lib/postgresql/data
+  restart: always

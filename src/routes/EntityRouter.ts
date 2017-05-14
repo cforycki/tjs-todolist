@@ -1,5 +1,5 @@
 import {Request, Response} from 'express';
-import * as _ from 'underscore';
+import {Connection, FindOptions} from 'typeorm';
 import {Entity} from '../entities/Entity';
 import {Router} from './Router';
 
@@ -8,47 +8,64 @@ export class EntityRouter<T extends Entity> extends Router {
     root: string;
     entities: Array<T>;
     Type: { new(...args) };
+    private findOptions: FindOptions;
 
-    constructor(type: { new(...args): T }, basePath: string) {
+    constructor(type: { new(...args): T }, basePath: string, findOptions?: FindOptions) {
         super();
         this.root = basePath;
+        this.findOptions = findOptions;
         this.entities = [];
         this.Type = type;
     }
 
-    initRoutes() {
+    initRoutes(connection: Connection) {
+        let entityRepository = connection.getRepository(this.Type);
 
         this.router.get('/', async (req: Request, res: Response) => {
-            res.send(this.entities);
+            let entities: Array<T> = [];
+            if (this.findOptions) {
+                entities = await entityRepository.find(this.findOptions)
+                                                 .catch(this.handleError);
+            } else {
+                entities = await entityRepository.find()
+                                                 .catch(this.handleError);
+            }
+            res.send(entities);
         });
 
         this.router.get('/:id', async (req: Request, res: Response) => {
-            let item = _.findWhere(this.entities, {id: Number.parseInt(req.params.id)});
-            if (item) {
-                res.json(item);
-            } else {
-                res.status(204);
+            let id = Number.parseInt(req.params.id);
+            if (id) {
+                let entity = await entityRepository.findOneById(id, this.findOptions)
+                                                   .catch(this.handleError);
+                if (entity) {
+                    res.status(200);
+                    res.send(entity);
+                    return;
+                }
             }
-            res.send();
+            res.sendStatus(404);
         });
 
         this.router.post('/', async (req: Request, res: Response) => {
             let entity = new this.Type(JSON.parse(req.body.entity));
-            this.entities.push(entity);
-            entity.id = _.chain(this.entities)
-                       .pluck('id')
-                       .max()
-                       .value() + 1;
-            res.location(req.baseUrl + '/' + entity.id);
-            res.status(201);
-            res.send(entity);
+            entity.id = null;
+            await entityRepository.persist(entity)
+                                  .then((entity) => {
+                                      res.location(req.baseUrl + '/' + entity.id);
+                                      res.status(201);
+                                      res.send(entity);
+                                  })
+                                  .catch(this.handleError);
         });
 
         this.router.put('/:id', async (req: Request, res: Response) => {
-            let entityUpdated = new this.Type(JSON.parse(req.body.entity));
-            let index = _.findIndex(this.entities, (entity) => entity.id === entityUpdated.id);
-            if (index !== -1) {
-                this.entities.splice(index, 1, entityUpdated);
+            let id = Number.parseInt(req.params.id) || null;
+            let entity = new this.Type(JSON.parse(req.body.entity));
+            if (entity && entity.id && id === entity.id && await entityRepository.findOneById(entity.id)
+                                                                                 .catch(this.handleError)) {
+                await entityRepository.persist(entity)
+                                      .catch(this.handleError);
                 res.status(204);
             } else {
                 res.status(405);
@@ -57,11 +74,23 @@ export class EntityRouter<T extends Entity> extends Router {
         });
 
         this.router.delete('/:id', async (req: Request, res: Response) => {
-            let id = Number.parseInt(req.params.id);
-            this.entities = _.filter(this.entities, (entity) => entity.id !== id);
+            let id = req.params.id || null;
+            if (id) {
+                let entity = await entityRepository.findOneById(id)
+                                                   .catch(this.handleError);
+                if(entity) {
+                    await entityRepository.remove(entity)
+                                          .catch(this.handleError);
+                }
+            }
             res.sendStatus(200);
         });
 
+    }
+
+    private handleError(error) {
+        console.error(error);
+        return null;
     }
 }
 

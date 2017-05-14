@@ -5,7 +5,7 @@
   "author": "Christophe FORYCKI",
   "license": "ISC",
   "scripts": {
-    "start": "nodemon ./dist/app.js"
+    "start": "nodemon -i database ./dist/app.js"
   },
   "devDependencies": {
     "typescript": "^2.3.0"

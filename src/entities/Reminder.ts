@@ -1,7 +1,14 @@
 import {Entity, IEntity} from './Entity';
 import DateTimeFormat = Intl.DateTimeFormat;
+import {Entity as OrmEntity} from 'typeorm/decorator/entity/Entity';
+import {Column} from 'typeorm';
+
+@OrmEntity()
 export class Reminder extends Entity {
+    @Column()
     value: string;
+
+    @Column()
     date: Date;
 
     constructor();

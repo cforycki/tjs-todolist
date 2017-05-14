@@ -1,4 +1,9 @@
+import {PrimaryGeneratedColumn} from 'typeorm';
+import {AbstractEntity} from 'typeorm/decorator/entity/AbstractEntity';
+
+@AbstractEntity()
 export abstract class Entity implements IEntity {
+    @PrimaryGeneratedColumn()
     id: number;
 
     constructor();

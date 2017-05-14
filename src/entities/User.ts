@@ -1,7 +1,14 @@
 import {Entity, IEntity} from './Entity';
-export class User extends Entity{
+import {Entity as OrmEntity} from 'typeorm/decorator/entity/Entity';
+import {Column} from 'typeorm';
+
+@OrmEntity()
+export class User extends Entity {
+    @Column({unique: true, nullable: false})
     login: string;
+    @Column()
     firstName: string;
+    @Column()
     lastName: string;
 
     constructor();
@@ -15,7 +22,7 @@ export class User extends Entity{
 
 }
 
-export interface IUser extends IEntity{
+export interface IUser extends IEntity {
     login: string;
     firstName?: string;
     lastName?: string;
